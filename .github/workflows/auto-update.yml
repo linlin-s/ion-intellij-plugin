@@ -8,20 +8,17 @@ permissions:
   actions: write
 
 jobs:
-  fetch-intellij-version:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fetch IntelliJ IDEA Release
-        id: fetch-release
-        run: |
-          release_data=$(curl -s https://api.github.com/repos/JetBrains/intellij-community/releases/latest)
-          release_version=$(echo $release_data | jq -r '.name' | awk '{print $3}')
-          echo "::set-output name=version::$release_version"
-          echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
-
   update-ion-intellij-plugin:
     runs-on: ubuntu-latest
     steps:
+      - name: Fetch IntelliJ IDEA Release
+        run: |
+          release_data=$(curl -s https://api.github.com/repos/JetBrains/intellij-community/releases/latest)
+          release_version=$(echo $release_data | jq -r '.name' | awk '{print $3}')
+          echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
+          src_version=$(echo $release_version | awk -F. '{printf "%s%s\n", substr($1,3), $2}' | sed 's/^0*//')
+          echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
+        
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -38,17 +35,16 @@ jobs:
       - name: Update build.gradle.kts
         run: |
           cd $GITHUB_WORKSPACE
-          sed -i -e "/val plugins = listOf(/,/)/{ /)/i \
-              PluginDescriptor(\
-                  since = \"$RELEASE_YEAR_VERSION\",\
-                  until = \"$RELEASE_YEAR_VERSION\",\
-                  sdkVersion = \"$RELEASE_YEAR_VERSION\",\
-                  platformType = PlatformType.IdeaCommunity,\
-                  sourceFolder = \"$RELEASE_YEAR_VERSION\",\
-                  kotlin = KotlinOptions(apiVersion = \"1.6\"),\
-                  dependencies = listOf(\"java\", \"Kotlin\")\
-              ),
-          }" build.gradle.kts
+          sed -i -e "/val plugins = listOf(/a \
+              PluginDescriptor( \
+                  since = \"$RELEASE_YEAR_VERSION\", \
+                  until = \"$RELEASE_YEAR_VERSION\", \
+                  sdkVersion = \"$RELEASE_YEAR_VERSION\", \
+                  platformType = PlatformType.IdeaCommunity, \
+                  sourceFolder = \"$SRC_VERSION\", \
+                  kotlin = KotlinOptions(apiVersion = \"1.6\"), \
+                  dependencies = listOf(\"java\", \"Kotlin\") \
+              )," build.gradle.kts
           
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
