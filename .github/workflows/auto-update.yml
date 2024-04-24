@@ -25,8 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
+          token: ${{ secrets.WORKFLOW_TOKEN }}
       - name: Find and stage YAML files
         run: | 
           cd $GITHUB_WORKSPACE/.github/workflows
@@ -38,6 +37,6 @@ jobs:
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          git-token: ${{ secrets.WORKFLOW_TOKEN }}
           title: 'Update ion-intellij-plugin to be compatible with the new IntelliJ'
           branch: update-plugin
