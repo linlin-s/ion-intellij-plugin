@@ -38,17 +38,18 @@ jobs:
       - name: Update build.gradle.kts
         run: |
           cd $GITHUB_WORKSPACE
-          sed -i -e "/val plugins = listOf(/a \
-              PluginDescriptor( \
-                  since = \"RELEASE_YEAR_VERSION\", \
-                  until = \"RELEASE_YEAR_VERSION\", \
-                  sdkVersion = \"RELEASE_YEAR_VERSION\", \
-                  platformType = PlatformType.IdeaCommunity, \
-                  sourceFolder = \"RELEASE_YEAR_VERSION\", \
-                  kotlin = KotlinOptions(apiVersion = \"1.6\"), \
-                  dependencies = listOf(\"java\", \"Kotlin\") \
-              )," build.gradle.kts
-              
+          sed -i -e "/val plugins = listOf(/,/)/{ /)/i \
+          \    PluginDescriptor(\
+          \        since = \"$RELEASE_YEAR_VERSION\",\
+          \        until = \"$RELEASE_YEAR_VERSION\",\
+          \        sdkVersion = \"$RELEASE_YEAR_VERSION\",\
+          \        platformType = PlatformType.IdeaCommunity,\
+          \        sourceFolder = \"$RELEASE_YEAR_VERSION\",\
+          \        kotlin = KotlinOptions(apiVersion = \"1.6\"),\
+          \        dependencies = listOf(\"java\", \"Kotlin\")\
+          \    )\
+          }" build.gradle.kts
+          
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
         with:
