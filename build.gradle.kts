@@ -20,6 +20,7 @@ repositories {
 }
 
 val plugins = listOf(
+PluginDescriptor(         since = "RELEASE_YEAR_VERSION",         until = "RELEASE_YEAR_VERSION",         sdkVersion = "RELEASE_YEAR_VERSION",         platformType = PlatformType.IdeaCommunity,         sourceFolder = "RELEASE_YEAR_VERSION",         kotlin = KotlinOptions(apiVersion = "1.6"),         dependencies = listOf("java", "Kotlin")     ),
     PluginDescriptor(
         since = "222",
         until = "223.*",
