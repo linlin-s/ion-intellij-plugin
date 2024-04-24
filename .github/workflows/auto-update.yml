@@ -2,7 +2,9 @@ name: Create PR for YAML Files
 
 on:
   workflow_dispatch:
-
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   fetch-intellij-version:
@@ -18,9 +20,6 @@ jobs:
 
   update-ion-intellij-plugin:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
