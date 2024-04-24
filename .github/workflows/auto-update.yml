@@ -1,0 +1,43 @@
+name: Create PR for YAML Files
+
+on:
+  workflow_dispatch:
+
+env:
+  NEW_VERSION
+jobs:
+  fetch-intellij-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch IntelliJ IDEA Release
+        id: fetch-release
+        run: |
+          release_data=$(curl -s https://api.github.com/repos/JetBrains/intellij-community/releases/latest)
+          release_version=$(echo $release_data | jq -r '.name' | awk '{print $3}')
+          echo "::set-output name=version::$release_version"
+          echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
+
+      - name: Print Release Version
+        run:
+          echo "Latest IntelliJ IDEA Release Version: ${{ env.RELEASE_YEAR_VERSION }}"
+
+  update-ion-intellij-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Find and stage YAML files
+        run: | 
+          cd ./github/workflows
+      
+          for file in *.yml; do
+            echo "Modified $file"
+          sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
+          done
+      - name: Create pull request for the new changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Update ion-intellij-plugin to be compatible with the new IntelliJ '
+          branch: update-plugin
