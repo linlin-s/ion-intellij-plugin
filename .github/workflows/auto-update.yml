@@ -24,7 +24,7 @@ jobs:
 
       - name: Find and stage YAML files
         run: | 
-          cd ./github/workflows
+          cd $GITHUB_WORKSPACE/github/workflows
       
           for file in *.yml; do
             echo "Modified $file"
