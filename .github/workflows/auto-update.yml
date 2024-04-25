@@ -37,13 +37,13 @@ jobs:
           cd $GITHUB_WORKSPACE
           sed -i -e "/val plugins = listOf(/a \
               PluginDescriptor( \
-                  since = \"$RELEASE_YEAR_VERSION\", \
-                  until = \"$RELEASE_YEAR_VERSION\", \
-                  sdkVersion = \"$RELEASE_YEAR_VERSION\", \
-                  platformType = PlatformType.IdeaCommunity, \
-                  sourceFolder = \"$SRC_VERSION\", \
-                  kotlin = KotlinOptions(apiVersion = \"1.6\"), \
-                  dependencies = listOf(\"java\", \"Kotlin\") \
+                  since = \"$RELEASE_YEAR_VERSION\",\n
+                  until = \"$RELEASE_YEAR_VERSION\",\n
+                  sdkVersion = \"$RELEASE_YEAR_VERSION\",\n
+                  platformType = PlatformType.IdeaCommunity,\n
+                  sourceFolder = \"$SRC_VERSION\",\n
+                  kotlin = KotlinOptions(apiVersion = \"1.6\"),\n
+                  dependencies = listOf(\"java\", \"Kotlin\")\n
               )," build.gradle.kts
           
       - name: Create pull request for the new changes
