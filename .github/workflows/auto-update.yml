@@ -17,7 +17,7 @@ jobs:
           echo $release_data
           release_version=IC-$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
           echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
-          src_version=$(echo "${release_version##*.}" | tr -d '.')
+          src_version=$(echo "$release_version" | sed -E 's/.*([0-9]{3})[^0-9]*$/\1/' | tr -d '.')
           untill_version="${src_version}*"
           echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
           echo "UNTILL_VERSION=$untill_version" >> $GITHUB_ENV
