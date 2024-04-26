@@ -18,7 +18,10 @@ jobs:
           release_version=$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
           echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
           src_version=$(echo $release_version | awk -F. '{printf "%s%s\n", substr($1,3), $2}' | sed 's/^0*//')
+          untill_version="${src_version}*"
           echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
+          echo "UNTILL_VERSION=$untill_version" >> $GITHUB_ENV
+
         
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,7 +31,7 @@ jobs:
         run: | 
           cd $GITHUB_WORKSPACE/.github/workflows
       
-          for file in *.yml; do
+          for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
             echo "Modified $file"
           sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
           done
@@ -38,11 +41,11 @@ jobs:
           cd $GITHUB_WORKSPACE
           sed -i -e "/val plugins = listOf(/a \
               PluginDescriptor( \
-                  since = \"$RELEASE_YEAR_VERSION\",\
-                  until = \"$RELEASE_YEAR_VERSION\",\
-                  sdkVersion = \"$RELEASE_YEAR_VERSION\",\
+                  since = \"$SRC_VERSION\",\
+                  until = \"$UNTILL_VERSION\",\
+                  sdkVersion = \"IC-${RELEASE_YEAR_VERSION}\",\
                   platformType = PlatformType.IdeaCommunity,\
-                  sourceFolder = \"$SRC_VERSION\",\
+                  sourceFolder = \"IC-${RELEASE_YEAR_VERSION}\",\
                   kotlin = KotlinOptions(apiVersion = \"1.6\"),\
                   dependencies = listOf(\"java\", \"Kotlin\")\
               )," build.gradle.kts
