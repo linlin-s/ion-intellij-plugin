@@ -45,7 +45,12 @@ jobs:
                   kotlin = KotlinOptions(apiVersion = \"1.6\"),\
                   dependencies = listOf(\"java\", \"Kotlin\")\
               )," build.gradle.kts
-          
+
+      - name: Copy the source file 
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          cp IC-241 IC-242
+      
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
         with:
