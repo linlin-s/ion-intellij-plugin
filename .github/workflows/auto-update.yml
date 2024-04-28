@@ -48,6 +48,7 @@ jobs:
       - name: Update build.gradle.kts
         run: |
           cd $GITHUB_WORKSPACE
+          sed -i 's/\(val defaultProductName = "\).*\("\)/\1'"$SRC_VERSION"'\2/g' path/to/your/file.kts
           sed -i -e "/val plugins = listOf(/a \
               PluginDescriptor( \
                   since = \"$SRC_VERSION\",\
