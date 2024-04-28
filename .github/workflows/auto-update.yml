@@ -49,16 +49,16 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           sed -i 's/\(val defaultProductName = "\).*\("\)/\1'"$SRC_VERSION"'\2/g' build.gradle.kts
-          sed -i -e "/val plugins = listOf(/a \\\n\
-          PluginDescriptor( \\\n\
-              since = \"$SRC_VERSION\", \\\n\
-              until = \"$UNTILL_VERSION\", \\\n\
-              sdkVersion = \"$RELEASE_YEAR_VERSION\", \\\n\
-              platformType = PlatformType.IdeaCommunity, \\\n\
-              sourceFolder = \"IC-${SRC_VERSION}\", \\\n\
-              kotlin = KotlinOptions(apiVersion = \"1.6\"), \\\n\
-              dependencies = listOf(\"java\", \"Kotlin\") \\\n\
-          )," build.gradle.kts
+          sed -i -e "/val plugins = listOf(/a \
+            PluginDescriptor(\
+            since = \"$SRC_VERSION\",\
+            until = \"$UNTILL_VERSION\",\
+            sdkVersion = \"$RELEASE_YEAR_VERSION\",\
+            platformType = PlatformType.IdeaCommunity,\
+            sourceFolder = \"IC-${SRC_VERSION}\",\
+            kotlin = KotlinOptions(apiVersion = \"1.6\"),\
+            dependencies = listOf(\"java\", \"Kotlin\")\
+           )," build.gradle.kts
 
       - name: Copy the source file 
         run: |
