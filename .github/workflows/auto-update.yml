@@ -1,4 +1,4 @@
-oname: Create PR for YAML Files
+name: Create PR for YAML Files
 
 on:
   workflow_dispatch:
