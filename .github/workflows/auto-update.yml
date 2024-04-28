@@ -16,13 +16,10 @@ jobs:
         run: |
           release_data=$(curl -s https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release)
           release_version=IC-$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
-          echo "release_version is $release_version"
-
           echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
-          last_part_version=${RELEASE_YEAR_VERSION##*-20}
-          echo "year version is ${RELEASE_YEAR_VERSION}"
+          last_part_version=${release_version##*-20}
           src_version=${last_part_version/./}
-          echo "src version is $RELEASE_YEAR_VERSION"
+          echo "src version is $src_version"
 
           # src_version=$(echo "$release_version" | sed -E 's/.*([0-9]{3})[^0-9]*$/\1/' | tr -d '.')
           untill_version="${src_version}*"
@@ -39,11 +36,12 @@ jobs:
           cd $GITHUB_WORKSPACE/.github/workflows
           for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
             last_version=$(sed -n '/matrix:/,/\]/s/.*"\(IC-[^"]*\)".*/\1/p' "$file" | tail -1)
+            echo "last version is $last_version"
             last_part_version=${last_version##*-20}
             last_part_without_dot=${last_part_version/./}
             echo "LAST_SRC_VERSION=$last_part_without_dot" >> $GITHUB_ENV
             echo "LAST_VERSION=$last_version" >> $GITHUB_ENV
-            if [ "$last_version" != "$RELEASE_YEAR_VERSION" ]; then
+            if [ "$last_version" != "${{RELEASE_YEAR_VERSION}}" ]; then
               sed -i '/matrix:/,/\]/s/\]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' "$file"
             fi
           # sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
