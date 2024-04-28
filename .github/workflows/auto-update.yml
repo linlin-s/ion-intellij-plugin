@@ -32,14 +32,14 @@ jobs:
         run: | 
           cd $GITHUB_WORKSPACE/.github/workflows
           for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
-          last_version=$(sed -n '/matrix:/,/\]/s/.*"\(IC-[^"]*\)".*/\1/p' "$file" | tail -1)
-          last_part_version=${last_version##*-20}
-          last_part_without_dot=${last_part_version/./}
-          echo "LAST_SRC_VERSION=$last_part_without_dot" >> $GITHUB_ENV
-          echo "LAST_VERSION=$last_version" >> $GITHUB_ENV
-          if [ "$last_version" != "$RELEASE_YEAR_VERSION" ]; then
-            sed -i '/matrix:/,/\]/s/\]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' "$file"
-          fi
+            last_version=$(sed -n '/matrix:/,/\]/s/.*"\(IC-[^"]*\)".*/\1/p' "$file" | tail -1)
+            last_part_version=${last_version##*-20}
+            last_part_without_dot=${last_part_version/./}
+            echo "LAST_SRC_VERSION=$last_part_without_dot" >> $GITHUB_ENV
+            echo "LAST_VERSION=$last_version" >> $GITHUB_ENV
+            if [ "$last_version" != "$RELEASE_YEAR_VERSION" ]; then
+              sed -i '/matrix:/,/\]/s/\]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' "$file"
+            fi
           # sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
           done
 
