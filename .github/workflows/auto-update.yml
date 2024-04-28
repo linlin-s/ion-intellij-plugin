@@ -16,9 +16,11 @@ jobs:
         run: |
           release_data=$(curl -s https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release)
           release_version=IC-$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
+          echo "release_version is $release_version"
+
           echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
           last_part_version=${RELEASE_YEAR_VERSION##*-20}
-          echo "year version is $RELEASE_YEAR_VERSION"
+          echo "year version is ${RELEASE_YEAR_VERSION}"
           src_version=${last_part_version/./}
           echo "src version is $RELEASE_YEAR_VERSION"
 
