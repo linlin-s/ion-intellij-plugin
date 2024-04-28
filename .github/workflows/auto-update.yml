@@ -14,10 +14,10 @@ jobs:
       - name: Fetch IntelliJ IDEA Release
         run: |
           release_data=$(curl -s https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release)
-          echo $release_data
           release_version=IC-$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
           echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
-          src_version=$(echo "$release_version" | sed -E 's/.*([0-9]{3})[^0-9]*$/\1/' | tr -d '.')
+          src_version=${${RELEASE_YEAR_VERSION##*-}/./}
+          # src_version=$(echo "$release_version" | sed -E 's/.*([0-9]{3})[^0-9]*$/\1/' | tr -d '.')
           untill_version="${src_version}*"
           echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
           echo "UNTILL_VERSION=$untill_version" >> $GITHUB_ENV
@@ -30,10 +30,13 @@ jobs:
       - name: Find and stage YAML files
         run: | 
           cd $GITHUB_WORKSPACE/.github/workflows
-      
           for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
-            echo "Modified $file"
-          sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
+          last_version=$(sed -n '/matrix:/,/\]/s/.*"\(IC-[^"]*\)".*/\1/p' "$file" | tail -1)
+          echo "LAST_VERSION=$last_version" >> $GITHUB_ENV
+          if [ "$last_version" != "$RELEASE_YEAR_VERSION" ]; then
+            sed -i '/matrix:/,/\]/s/\]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' "$file"
+          fi
+          # sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
           done
 
       - name: Update build.gradle.kts
@@ -53,7 +56,7 @@ jobs:
       - name: Copy the source file 
         run: |
           cd $GITHUB_WORKSPACE/src
-          cp -r IC-241 IC-242
+          cp -r $LAST_VERSION IC-${SRC_VERSION}
       
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
