@@ -20,8 +20,6 @@ jobs:
           last_part_version=${release_version##*-20}
           src_version=${last_part_version/./}
           echo "src version is $src_version"
-
-          # src_version=$(echo "$release_version" | sed -E 's/.*([0-9]{3})[^0-9]*$/\1/' | tr -d '.')
           untill_version="${src_version}*"
           echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
           echo "UNTILL_VERSION=$untill_version" >> $GITHUB_ENV
@@ -64,8 +62,10 @@ jobs:
       - name: Copy the source file 
         run: |
           cd $GITHUB_WORKSPACE/src
-          cp -r IC-${LAST_SRC_VERSION} IC-${SRC_VERSION}
-      
+          if [ "$LAST_SRC_VERSION" != "$SRC_VERSION" ]; then
+            cp -r IC-${LAST_SRC_VERSION} IC-${SRC_VERSION}
+          fi
+    
       - name: Create pull request for the new changes
         uses: peter-evans/create-pull-request@v6
         with:
