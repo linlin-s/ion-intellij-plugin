@@ -1,0 +1,75 @@
+name: Automatically Update ion-intellij-plugin
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  update-ion-intellij-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch IntelliJ IDEA Release
+        run: |
+          release_data=$(curl -s https://data.services.jetbrains.com/products/releases?code=IIC&latest=true&type=release)
+          release_version=IC-$(echo $release_data | python -c "import sys, json; print(json.load(sys.stdin)['IIC'][0]['version'])")
+          echo "RELEASE_YEAR_VERSION=$release_version" >> $GITHUB_ENV
+          last_part_version=${release_version##*-20}
+          src_version=${last_part_version/./}
+          echo "src version is $src_version"
+          untill_version="${src_version}*"
+          echo "SRC_VERSION=$src_version" >> $GITHUB_ENV
+          echo "UNTILL_VERSION=$untill_version" >> $GITHUB_ENV
+
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+      - name: Find and stage YAML files
+        run: |
+          cd $GITHUB_WORKSPACE/.github/workflows
+          for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
+            last_version=$(sed -n '/matrix:/,/\]/s/.*"\(IC-[^"]*\)".*/\1/p' "$file" | tail -1)
+            echo "last version is $last_version"
+            last_part_version=${last_version##*-20}
+            last_part_without_dot=${last_part_version/./}
+            echo "LAST_SRC_VERSION=$last_part_without_dot" >> $GITHUB_ENV
+            echo "LAST_VERSION=$last_version" >> $GITHUB_ENV
+            if [ "$last_version" != "$RELEASE_YEAR_VERSION" ]; then
+              sed -i '/matrix:/,/\]/s/\]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' "$file"
+            fi
+          # sed -i '/matrix:/,/]/s/]$/, "'"$RELEASE_YEAR_VERSION"'"]/g' $file
+          done
+
+      - name: Update build.gradle.kts
+        run: |
+          cd $GITHUB_WORKSPACE
+          sed -i 's/\(val defaultProductName = "\).*\("\)/\1'"$SRC_VERSION"'\2/g' build.gradle.kts
+          sed -i -e "/val plugins = listOf(/a \
+            PluginDescriptor(\
+            since = \"$SRC_VERSION\",\
+            until = \"$UNTILL_VERSION\",\
+            sdkVersion = \"$RELEASE_YEAR_VERSION\",\
+            platformType = PlatformType.IdeaCommunity,\
+            sourceFolder = \"IC-${SRC_VERSION}\",\
+            kotlin = KotlinOptions(apiVersion = \"1.6\"),\
+            dependencies = listOf(\"java\", \"Kotlin\")\
+           )," build.gradle.kts
+
+      - name: Copy the source file
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          if [ "$LAST_SRC_VERSION" != "$SRC_VERSION" ]; then
+            cp -r IC-${LAST_SRC_VERSION} IC-${SRC_VERSION}
+          fi
+
+      - name: Create pull request for the new changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          git-token: ${{ secrets.WORKFLOW_TOKEN }}
+          title: 'Update ion-intellij-plugin to be compatible with the new IntelliJ'
+          branch: update-plugin
