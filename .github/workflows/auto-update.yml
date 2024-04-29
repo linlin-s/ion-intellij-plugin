@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.WORKFLOW_TOKEN }}
-      - name: Find and stage YAML files
+      - name: Update YAML files
         run: |
           cd $GITHUB_WORKSPACE/.github/workflows
           for file in $(find . -type f -name '*.yml' ! -name 'release-eap.yml'); do
@@ -60,7 +60,7 @@ jobs:
             dependencies = listOf(\"java\", \"Kotlin\")\
            )," build.gradle.kts
 
-      - name: Copy the source file
+      - name: Copy the source file from the last version
         run: |
           cd $GITHUB_WORKSPACE/src
           if [ "$LAST_SRC_VERSION" != "$SRC_VERSION" ]; then
